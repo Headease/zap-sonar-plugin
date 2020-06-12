@@ -29,7 +29,7 @@ import org.sonar.api.batch.rule.Severity;
 import org.sonar.api.batch.sensor.Sensor;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.SensorDescriptor;
-import org.sonar.api.batch.sensor.issue.internal.DefaultIssueLocation;
+import org.sonar.api.batch.sensor.issue.NewIssue;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.scan.filesystem.PathResolver;
 import org.sonar.api.utils.log.Logger;
@@ -70,9 +70,10 @@ public class ZapSensor implements Sensor {
 
   private void addIssue(org.sonar.api.batch.sensor.SensorContext context, AlertItem alert) {
     Severity severity = ZapUtils.riskCodeToSonarQubeSeverity(alert.getRiskcode());
-    context.newIssue()
-        .forRule(RuleKey.of(ZapPlugin.REPOSITORY_KEY, String.valueOf(alert.getPluginid())))
-        .at(new DefaultIssueLocation().on(context.module()).message(formatDescription(alert)))
+
+    final NewIssue issue = context.newIssue();
+    issue.forRule(RuleKey.of(ZapPlugin.REPOSITORY_KEY, String.valueOf(alert.getPluginid())))
+        .at(issue.newLocation().on(context.project()).message(formatDescription(alert)))
         .overrideSeverity(severity)
         .save();
 
